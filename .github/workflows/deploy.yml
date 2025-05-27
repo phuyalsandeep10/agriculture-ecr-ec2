@@ -34,7 +34,9 @@ jobs:
 
     - name: Push image to ECR
       run: |
-        sudo docker push ${{ steps.login-ecr.outputs.registry }}/$IMAGE_NAME:latest
+        sudo docker push 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
+
+        sudo docker push $IMAGE_NAME
 
     - name: Decode and write SSH key
       run: |
