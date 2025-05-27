@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  IMAGE_NAME: ${{ secrets.ECR_REPOSITORY }}
+  IMAGE_URI: 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
 
 jobs:
   deploy:
@@ -29,14 +29,12 @@ jobs:
 
     - name: Build Docker image
       run: |
-        sudo docker build -t $IMAGE_NAME .
-        sudo docker tag $IMAGE_NAME:latest ${{ steps.login-ecr.outputs.registry }}/$IMAGE_NAME:latest
+        sudo docker build -t $IMAGE_URI .
+        sudo docker tag $IMAGE_URI $IMAGE_URI
 
     - name: Push image to ECR
       run: |
-        sudo docker push 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
-
-        sudo docker push $IMAGE_NAME
+        sudo docker push $IMAGE_URI
 
     - name: Decode and write SSH key
       run: |
@@ -45,9 +43,9 @@ jobs:
 
     - name: SSH and deploy on EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i ec2-key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
-          sudo docker pull ${{ steps.login-ecr.outputs.registry }}/$IMAGE_NAME:latest
-          sudo docker stop react-app || true && docker rm react-app || true
-          sudo docker run -d -p 80:80 --name react-app ${{ steps.login-ecr.outputs.registry }}/$IMAGE_NAME:latest
+        ssh -o StrictHostKeyChecking=no -i agri.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin 423623831693.dkr.ecr.us-east-1.amazonaws.com
+          sudo docker pull $IMAGE_URI
+          sudo docker stop react-app || true && sudo docker rm react-app || true
+          sudo docker run -d -p 80:80 --name react-app $IMAGE_URI
         EOF
