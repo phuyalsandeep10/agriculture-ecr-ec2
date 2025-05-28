@@ -29,11 +29,11 @@ jobs:
 
     - name: Build Docker image
       run: |
-        sudo docker build -t $IMAGE_URI .
+        docker build -t $IMAGE_URI .
 
     - name: Push image to ECR
       run: |
-        sudo docker push $IMAGE_URI
+        docker push $IMAGE_URI
 
     - name: Decode and write SSH key
       run: |
@@ -46,17 +46,17 @@ jobs:
           set -e  # Exit immediately if a command fails
 
           echo "Logging in to Amazon ECR..."
-          aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 423623831693.dkr.ecr.us-east-1.amazonaws.com
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 423623831693.dkr.ecr.us-east-1.amazonaws.com
 
           echo "Pulling latest Docker image..."
-          sudo docker pull 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
+          docker pull 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
 
           echo "Stopping and removing existing container if exists..."
-          sudo docker stop react-app || true
-          sudo docker rm react-app || true
+          docker stop react-app || true
+          docker rm react-app || true
 
           echo "Running new container..."
-          sudo docker run -d -p 80:80 --name react-app 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
+          docker run -d -p 80:80 --name react-app 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
 
           echo "Deployment complete."
         EOF
