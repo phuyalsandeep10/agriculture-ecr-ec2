@@ -37,7 +37,7 @@ jobs:
 
     - name: Decode and write SSH key
       run: |
-        echo "${{ secrets.EC2_KEY }}" | base64 -d > agri.pem
+        echo "${{ secrets.EC2_KEY }}" > agri.pem
         chmod 600 agri.pem
 
     - name: SSH and deploy on EC2
