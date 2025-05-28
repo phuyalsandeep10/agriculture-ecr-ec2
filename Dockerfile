@@ -7,7 +7,7 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Production stage
+# Production stagee
 FROM node:18-alpine
 
 WORKDIR /app

@@ -7,6 +7,7 @@ on:
 
 env:
   IMAGE_URI: 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
+  AWS_REGION: us-east-1
 
 jobs:
   deploy:
@@ -21,16 +22,14 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
+        aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
-      id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build Docker image
       run: |
         sudo docker build -t $IMAGE_URI .
-        sudo docker tag $IMAGE_URI $IMAGE_URI
 
     - name: Push image to ECR
       run: |
@@ -43,9 +42,22 @@ jobs:
 
     - name: SSH and deploy on EC2
       run: |
-        ssh -o StrictHostKeyChecking=no -i agri.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin 423623831693.dkr.ecr.us-east-1.amazonaws.com
-          sudo docker pull $IMAGE_URI
-          sudo docker stop react-app || true && sudo docker rm react-app || true
-          sudo docker run -d -p 80:80 --name react-app $IMAGE_URI
+        ssh -o StrictHostKeyChecking=no -i agri.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          set -e  # Exit immediately if a command fails
+
+          echo "Logging in to Amazon ECR..."
+          aws ecr get-login-password --region us-east-1 | sudo docker login --username AWS --password-stdin 423623831693.dkr.ecr.us-east-1.amazonaws.com
+
+          echo "Pulling latest Docker image..."
+          sudo docker pull 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
+
+          echo "Stopping and removing existing container if exists..."
+          sudo docker stop react-app || true
+          sudo docker rm react-app || true
+
+          echo "Running new container..."
+          sudo docker run -d -p 80:80 --name react-app 423623831693.dkr.ecr.us-east-1.amazonaws.com/agri:latest
+
+          echo "Deployment complete."
         EOF
+      
