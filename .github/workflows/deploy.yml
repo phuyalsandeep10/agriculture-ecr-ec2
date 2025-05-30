@@ -42,11 +42,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
+
       - name: Setup SSH key
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > agriculture.pem
-          chmod 600 agriculture.pem
+          sudo chmod 400 agriculture.pem
 
         
       - name: Deploy code to EC2
