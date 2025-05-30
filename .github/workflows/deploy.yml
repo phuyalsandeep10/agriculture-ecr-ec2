@@ -3,7 +3,7 @@ name: Build, publish, and deploy Frontend Docker image (ECR) to EC2
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
@@ -26,15 +26,15 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t thursday-repo .
+          docker build -t argo-repo .
       
       - name: Tag Docker image
         run: |
-          docker tag thursday-repo:latest 654654282708.dkr.ecr.ap-southeast-1.amazonaws.com/thursday-repo:latest
+          docker tag argo-repo:latest 879602785537.dkr.ecr.ap-southeast-1.amazonaws.com/argo-repo:latest
       
       - name: Push Docker image to Amazon ECR
         run: |
-          docker push 654654282708.dkr.ecr.ap-southeast-1.amazonaws.com/thursday-repo:latest
+          docker push 879602785537.dkr.ecr.ap-southeast-1.amazonaws.com/argo-repo:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -52,14 +52,14 @@ jobs:
           port: ${{ secrets.EC2_PORT}}
           script: |
             # Log in to AWS ECR on the EC2 instance
-            aws ecr get-login-password --region ap-southeast-1 | sudo docker login --username AWS --password-stdin 654654282708.dkr.ecr.ap-southeast-1.amazonaws.com
+            aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 879602785537.dkr.ecr.ap-southeast-1.amazonaws.com
 
             # Pull the latest image
-            sudo docker pull 654654282708.dkr.ecr.ap-southeast-1.amazonaws.com/thursday-repo:latest
+            sudo docker pull 879602785537.dkr.ecr.ap-southeast-1.amazonaws.com/argo-repo:latest
             
             # Stop and remove the old container if it exists
             sudo docker stop frontend || true
             sudo docker rm frontend || true
             
             # Run the new container
-            sudo docker run -d --name frontend -p 3000:80 654654282708.dkr.ecr.ap-southeast-1.amazonaws.com/thursday-repo:latest
+            sudo docker run -d --name frontend -p 3000:3000 879602785537.dkr.ecr.ap-southeast-1.amazonaws.com/argo-repo:latest
