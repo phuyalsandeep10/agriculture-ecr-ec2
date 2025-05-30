@@ -68,5 +68,5 @@ jobs:
             sudo docker stop frontend || true
             sudo docker rm frontend || true
             
-            # Run the new container
+            # Run the new containers
             sudo docker run -d --name frontend -p 3000:3000 879602785537.dkr.ecr.ap-southeast-1.amazonaws.com/argo-repo:latest
